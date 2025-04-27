@@ -126,5 +126,5 @@ CREATE TABLE favorites (
 
 ## Autor
 
-- **Nombre del Autor**: [Tu Nombre]
-- **Contacto**: [Tu Email o Redes Sociales]
+- **Nombre del Autor**: Javier Alburges
+- **Contacto**: javieralburges@gmail.com
