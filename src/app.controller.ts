@@ -6,6 +6,9 @@ import {
   Query,
   Delete,
   Param,
+  BadRequestException,
+  NotFoundException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { UUID } from 'crypto';
 
@@ -19,10 +22,9 @@ export class AppController {
   @Get('weather')
   async getWeather(@Query('city') city: string): Promise<any> {
     if (!city) {
-      throw new Error('City is required');
+      throw new BadRequestException('City query parameter is required');
     }
 
-    // Datos de ejemplo para diferentes ciudades
     const weatherData = {
       Maracaibo: {
         location: {
@@ -52,24 +54,30 @@ export class AppController {
       },
     };
 
-    // Simulate an asynchronous operation
-    const data = await new Promise((resolve) =>
-      setTimeout(() => resolve(weatherData[city]), 100),
-    );
-    if (!data) {
-      throw new Error(`Weather data for city ${city} not found`);
-    }
+    try {
+      const data = await new Promise((resolve) =>
+        setTimeout(() => resolve(weatherData[city]), 100),
+      );
 
-    return data;
+      if (!data) {
+        throw new NotFoundException(`Weather data for city ${city} not found`);
+      }
+      return data;
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      console.error('Error fetching weather data:', error);
+      throw new InternalServerErrorException('Failed to fetch weather data');
+    }
   }
 
   @Get('autocomplete')
   async getAutocomplete(@Query('query') query: string): Promise<string[]> {
     if (!query) {
-      throw new Error('Query is required');
+      throw new BadRequestException('Query parameter is required');
     }
 
-    // Lista de ciudades de ejemplo
     const cities = [
       'Maracaibo',
       'Caracas',
@@ -79,60 +87,83 @@ export class AppController {
       'Mérida',
     ];
 
-    // Simulate an asynchronous operation
-    const filteredCities = await new Promise<string[]>((resolve) =>
-      setTimeout(
-        () =>
-          resolve(
-            cities.filter((city) =>
-              city.toLowerCase().includes(query.toLowerCase()),
+    try {
+      const filteredCities = await new Promise<string[]>((resolve) =>
+        setTimeout(
+          () =>
+            resolve(
+              cities.filter((city) =>
+                city.toLowerCase().includes(query.toLowerCase()),
+              ),
             ),
-          ),
-        100,
-      ),
-    );
-
-    return filteredCities;
+          100,
+        ),
+      );
+      return filteredCities;
+    } catch (error) {
+      console.error('Error during autocomplete:', error);
+      throw new InternalServerErrorException('Failed to perform autocomplete');
+    }
   }
 
   @Get('favorites')
-  getFavorites(): Promise<any[]> {
-    // Datos de ejemplo para favoritos
-    return Promise.resolve([
-      {
-        user_id: '123e4567-e89b-12d3-a456-426614174000',
-        city_name: 'Maracaibo',
-      },
-      { user_id: '123e4567-e89b-12d3-a456-426614174001', city_name: 'Caracas' },
-    ]);
+  async getFavorites(): Promise<any[]> {
+    try {
+      const favorites = await Promise.resolve([
+        {
+          user_id: '123e4567-e89b-12d3-a456-426614174000',
+          city_name: 'Maracaibo',
+        },
+        {
+          user_id: '123e4567-e89b-12d3-a456-426614174001',
+          city_name: 'Caracas',
+        },
+      ]);
+      return favorites;
+    } catch (error) {
+      console.error('Error fetching favorites:', error);
+      throw new InternalServerErrorException('Failed to fetch favorites');
+    }
   }
 
   @Post('favorites')
-  addFavorite(@Body() payload: AddFavoritePayload): Promise<any> {
+  async addFavorite(@Body() payload: AddFavoritePayload): Promise<any> {
     const { user_id, city_name } = payload;
 
     if (!user_id || !city_name) {
-      throw new Error('Both user_id and city_name are required');
+      throw new BadRequestException(
+        'Both user_id and city_name are required in the request body',
+      );
     }
 
-    // Datos de ejemplo para simular la adición de un favorito
-    const newFavorite = { user_id, city_name };
+    try {
+      const newFavorite = { user_id, city_name };
+      await Promise.resolve();
 
-    return Promise.resolve({
-      message: 'Favorite added successfully',
-      favorite: newFavorite,
-    });
+      return {
+        message: 'Favorite added successfully',
+        favorite: newFavorite,
+      };
+    } catch (error) {
+      console.error('Error adding favorite:', error);
+      throw new InternalServerErrorException('Failed to add favorite');
+    }
   }
 
   @Delete('favorites/:city')
-  removeFavorite(@Param('city') city: string): Promise<any> {
+  async removeFavorite(@Param('city') city: string): Promise<any> {
     if (!city) {
-      throw new Error('City is required');
+      throw new BadRequestException('City parameter is required');
     }
 
-    // Simulación de eliminación de un favorito
-    return Promise.resolve({
-      message: `Favorite city ${city} removed successfully`,
-    });
+    try {
+      await Promise.resolve();
+      return {
+        message: `Favorite city ${city} removed successfully`,
+      };
+    } catch (error) {
+      console.error('Error removing favorite:', error);
+      throw new InternalServerErrorException('Failed to remove favorite');
+    }
   }
 }
