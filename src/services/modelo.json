@@ -1,0 +1,47 @@
+{
+    "location": {
+        "name": "Maracaibo",
+        "region": "Zulia",
+        "country": "Venezuela",
+        "lat": 10.6317,
+        "lon": -71.6406,
+        "tz_id": "America/Caracas",
+        "localtime_epoch": 1745705955,
+        "localtime": "2025-04-26 18:19"
+    },
+    "current": {
+        "last_updated_epoch": 1745705700,
+        "last_updated": "2025-04-26 18:15",
+        "temp_c": 29.4,
+        "temp_f": 84.9,
+        "is_day": 1,
+        "condition": {
+            "text": "Patchy rain nearby",
+            "icon": "//cdn.weatherapi.com/weather/64x64/day/176.png",
+            "code": 1063
+        },
+        "wind_mph": 3.6,
+        "wind_kph": 5.8,
+        "wind_degree": 96,
+        "wind_dir": "E",
+        "pressure_mb": 1008.0,
+        "pressure_in": 29.77,
+        "precip_mm": 0.4,
+        "precip_in": 0.02,
+        "humidity": 79,
+        "cloud": 0,
+        "feelslike_c": 34.0,
+        "feelslike_f": 93.2,
+        "windchill_c": 29.1,
+        "windchill_f": 84.4,
+        "heatindex_c": 33.4,
+        "heatindex_f": 92.1,
+        "dewpoint_c": 23.5,
+        "dewpoint_f": 74.4,
+        "vis_km": 9.0,
+        "vis_miles": 5.0,
+        "uv": 0.4,
+        "gust_mph": 4.9,
+        "gust_kph": 7.8
+    }
+}
