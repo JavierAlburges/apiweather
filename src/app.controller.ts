@@ -11,7 +11,7 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { UUID } from 'crypto';
-//import { supabase } from './config/supabase.config';
+import { SupabaseService } from './services/supabase.service';
 
 interface AddFavoritePayload {
   user_id: UUID; // Cambiar UUID a string para evitar errores
@@ -20,6 +20,8 @@ interface AddFavoritePayload {
 
 @Controller()
 export class AppController {
+  constructor(private readonly supabaseService: SupabaseService) {}
+
   @Get('weather')
   async getWeather(@Query('city') city: string): Promise<any> {
     if (!city) {
@@ -108,63 +110,74 @@ export class AppController {
   }
 
   @Get('favorites')
-  async getFavorites(): Promise<any[]> {
+  async getFavorites(@Query('user_id') userId: string): Promise<any[]> {
+    if (!userId) {
+      throw new BadRequestException('El parámetro "user_id" es obligatorio');
+    }
     try {
-      const favorites = await Promise.resolve([
-        {
-          user_id: '123e4567-e89b-12d3-a456-426614174000',
-          city_name: 'Maracaibo',
-        },
-        {
-          user_id: '123e4567-e89b-12d3-a456-426614174001',
-          city_name: 'Caracas',
-        },
-      ]);
-      return favorites;
+      return await this.supabaseService.getFavorites(userId);
     } catch (error) {
-      console.error('Error fetching favorites:', error);
-      throw new InternalServerErrorException('Failed to fetch favorites');
+      console.error('Error al obtener los favoritos:', error);
+      throw new InternalServerErrorException('Error al obtener los favoritos');
     }
   }
 
   @Post('favorites')
   async addFavorite(@Body() payload: AddFavoritePayload): Promise<any> {
     const { user_id, city_name } = payload;
-
     if (!user_id || !city_name) {
       throw new BadRequestException(
-        'Both user_id and city_name are required in the request body',
+        'Se requieren "user_id" y "city_name" en el cuerpo de la solicitud',
       );
     }
-
     try {
-      const newFavorite = { user_id, city_name };
-      await Promise.resolve();
-
+      const data = await this.supabaseService.addFavorite(user_id, city_name);
       return {
-        message: 'Favorite added successfully',
-        favorite: newFavorite,
+        message: 'Favorito añadido correctamente',
+        favorite: data,
       };
     } catch (error) {
-      console.error('Error adding favorite:', error);
-      throw new InternalServerErrorException('Failed to add favorite');
+      console.error('Error al añadir el favorito:', error);
+      throw new InternalServerErrorException('Error al añadir el favorito');
     }
   }
 
   @Delete('favorites/:city')
-  async removeFavorite(@Param('city') city: string): Promise<any> {
-    if (!city) {
-      throw new BadRequestException('City parameter is required');
+  async removeFavorite(
+    @Query('user_id') userId: string,
+    @Param('city') cityName: string,
+  ): Promise<any> {
+    if (!userId || !cityName) {
+      throw new BadRequestException('Se requieren "user_id" y "city_name"');
     }
-
     try {
-      await Promise.resolve();
+      await this.supabaseService.removeFavorite(userId, cityName);
       return {
-        message: `Favorite city ${city} removed successfully`,
+        message: `Ciudad favorita ${cityName} eliminada correctamente`,
       };
     } catch (error) {
-      console.error('Error removing favorite:', error);
-      throw new InternalServerErrorException('Failed to remove favorite');
+      console.error('Error al eliminar el favorito:', error);
+      throw new InternalServerErrorException('Error al eliminar el favorito');
+    }
+  }
+
+  @Post('favorites/example')
+  async addExampleFavorite(): Promise<any> {
+    const exampleUserId = '07e013ea-2f78-43c3-b7c3-9c4d56b499c9';
+    const exampleCity = 'Maracaibo';
+
+    try {
+      const data = await this.supabaseService.addFavorite(
+        exampleUserId,
+        exampleCity,
+      );
+      return {
+        message: 'Dato de ejemplo añadido correctamente',
+        favorite: data,
+      };
+    } catch (error) {
+      console.error('Error al añadir dato de ejemplo:', error);
+      throw new InternalServerErrorException('Error al añadir dato de ejemplo');
     }
   }
 }
