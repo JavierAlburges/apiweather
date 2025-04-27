@@ -11,6 +11,7 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { UUID } from 'crypto';
+//import { supabase } from './config/supabase.config';
 
 interface AddFavoritePayload {
   user_id: UUID; // Cambiar UUID a string para evitar errores
